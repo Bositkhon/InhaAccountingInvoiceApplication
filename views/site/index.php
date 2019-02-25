@@ -13,7 +13,7 @@ use yii\bootstrap\ActiveForm;
             <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]);?>
                 <?php echo $form->field($model, 'file')->label(false)->fileInput(['class' => 'btn btn-default mh-auto']); ?>
                 <div class="form-group">
-                    <?php echo Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-primary']); ?>
+                    <?php echo Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-default']); ?>
                 </div>
             <?php ActiveForm::end();?>
         </div>
