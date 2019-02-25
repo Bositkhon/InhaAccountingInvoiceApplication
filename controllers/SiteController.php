@@ -84,32 +84,74 @@ class SiteController extends Controller
 
     public function actionExcel(){
 
-        $file = Yii::getAlias('@uploads/test-input-data.xlsx');
+        $original = Yii::getAlias('@uploads/bachelors-sem-2-invoice.xlsx');
 
-        $spreadsheet = IOFactory::load($file);
+        $propis = Yii::getAlias('@uploads/PROPIS.xla');
+        
+        $spreadsheet = IOFactory::load($original);
 
-        $data = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+        $worksheet = $spreadsheet->getSheetByName('Reg.List');
 
-        print_r($data);
+        $highestColumn = $worksheet->getHighestColumn();
+        $highestRow = $worksheet->getHighestRow();
 
-        $invoice_period = $data[5][3];
-        $period = $data[4]['A'];
-
-        /*for($i = 5; $i <= count($data) - 1; $i++){
-            $whitelist[] = [
-                'serial_num' => $data[$i][0],
-                'fullname' => $data[$i][1],
-                'department' => $data[$i][2],
-                'contract_num' => $data[$i][4],
-                'date_from' => $data[$i][6],
-                'course' => $data[$i][7],
-                'invoice_num' => $data[$i][8],
-                'given_date' => $data[$i][9],
-                'amount' => (int)implode('', explode(',', $data[$i][10]))
+        $invoice_date = $worksheet->getCell('A4')->getFormattedValue();
+        $invoice_semester_date = $worksheet->getCell('D5')->getFormattedValue();
+        
+        for($row = 6; $row <= $highestRow; $row++){
+            $invoice = [
+                'student_num' => $worksheet->getCell('A'.$row)->getFormattedValue(),
+                'fullname' => $worksheet->getCell('B'.$row)->getValue(),
+                'faculty' => $worksheet->getCell('C'.$row)->getValue(),
+                'contract_num' => $worksheet->getCell('E'.$row)->getFormattedValue(),
+                'contract_date' => strtotime($worksheet->getCell('G'.$row)->getFormattedValue()),
+                'course' => $worksheet->getCell('H'.$row)->getValue(),
+                'invoice_num' => $worksheet->getCell('I'.$row)->getFormattedValue(),
+                'issue_date' => strtotime($worksheet->getCell('J'.$row)->getFormattedValue()),
+                'money' => $worksheet->getCell('K'.$row)->getValue(),
             ];
+
+            $invoice_template_worksheet = $spreadsheet->getSheetByName('template');
+
+            $new_worksheet = clone $invoice_template_worksheet;
+            $new_worksheet->setTitle($invoice['student_num']);
+            
+            $new_worksheet->setCellValue('E1', "=Reg.List!I{$row}");
+            $new_worksheet->setCellValue('E3', "=Reg.List!E{$row}");
+            $new_worksheet->setCellValue('G1', "=Reg.List!J{$row}");
+            $new_worksheet->setCellValue('G3', "=Reg.List!G{$row}");
+            $new_worksheet->setCellValue('B20', "=Reg.List!B{$row}");
+            $new_worksheet->setCellValue('B22', "{$invoice_semester_date}");
+            $new_worksheet->setCellValue('C21', "=Reg.List!C{$row}");
+            $new_worksheet->setCellValue('F19', "=Reg.List!K{$row}");
+            $new_worksheet->setCellValue('C29', "=prop(F24)");
+            $new_worksheet->setCellValue('B51', "прошел(ла) обучение за {$invoice_semester_date}");
+
+            $spreadsheet->addSheet($new_worksheet);
+            
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="myfile.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer->setPreCalculateFormulas(false);
+            $writer->save('php://output');
+
+            die();
+
         }
-        echo $invoice_period;
-        print_r($whitelist);*/
+        
+
+        // echo $highestColumn.$highestRow;
+
+        // $data = $spreadsheet->getActiveSheet()->toArray(null,true,false,true);
+
+        // print_r($data);
+
+        // echo $spreadsheet->getActiveSheet()->getCell('E3')->getCalculatedValue() . PHP_EOL;
+        // echo $spreadsheet->getActiveSheet()->getCell('F19')->getCalculatedValue();
+
+        // $spreadsheet->setActiveSheetIndex(1);
 
         die();
     }
