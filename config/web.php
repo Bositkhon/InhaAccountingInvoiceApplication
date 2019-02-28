@@ -13,6 +13,7 @@ $config = [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
         '@uploads' => dirname(__DIR__) . '/uploads',
+        '@invoices' => '@uploads/invoices',
     ],
     'components' => [
         'request' => [

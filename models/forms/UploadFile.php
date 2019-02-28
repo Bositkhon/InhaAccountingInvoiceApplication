@@ -38,10 +38,8 @@ class UploadFile extends Model
     public function upload(){
         if($this->validate()){
             $path = Yii::getAlias('@uploads');
-            $date = date('ymd-His');
-            $file = 'import-' . $date . '.' . $this->file->extension;
+            $file = 'import' . '.' .$this->file->extension;
             $this->file->saveAs($path . '/' . $file);
-
             return true;
         }else{
             return false;
