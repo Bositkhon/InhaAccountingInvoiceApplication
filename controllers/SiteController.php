@@ -86,16 +86,50 @@ class SiteController extends Controller
     }
 
     public function actionExcel(){
+        $invoice_save_path = Yii::getAlias('@invoices');
 
-        $original = Yii::getAlias('@uploads/bachelors-sem-2-invoice.xlsx');
+        $propis_file_path = Yii::getAlias('@uploads/PROPIS.xla');
 
-        $propis = Yii::getAlias('@uploads/PROPIS.xla');
+        $input_file_path = Yii::getAlias('@uploads/import.xlsx');
+        $template_file_path = Yii::getAlias('@uploads/invoice-template.xlsx');
+        $total_list_file_path = Yii::getAlias('@uploads/total-registration-list-and-invoices.xlsx');
         
-        $spreadsheet = IOFactory::load($original);
+        $input_file_spreadsheet = IOFactory::load($input_file_path);
+        $template_file_spreadsheet = IOFactory::load($template_file_path);
+        $total_file_spreadsheet = IOFactory::load($total_list_file_path);
 
-        $worksheet = $spreadsheet->getSheetByName('Reg.List');
 
-        $highestColumn = $worksheet->getHighestColumn();
+        $input_file_spreadsheet->setActiveSheetIndex(0);
+        $input_file_worksheet = $input_file_spreadsheet->getActiveSheet();
+
+        $template_file_spreadsheet->setActiveSheetIndex(0);
+        $template_worksheet = $template_file_spreadsheet->getActiveSheet();
+
+        $total_file_spreadsheet->setActiveSheetIndex(0);
+        $total_worksheet = $total_file_spreadsheet->getActiveSheet();
+        
+        $highestRow = $input_file_worksheet->getHighestRow();
+
+        $invoice_date = strtotime($input_file_worksheet->getCell('A4')->getFormattedValue());
+        $invoice_semester_date = $input_file_worksheet->getCell('D5')->getFormattedValue();
+
+        for($row = 6; $row <= $highestRow; $row++){
+            $invoice_info = [
+                'student_num' => $input_file_worksheet->getCell('A'.$row)->getFormattedValue(),
+                'fullname' => $input_file_worksheet->getCell('B'.$row)->getValue(),
+                'faculty' => $input_file_worksheet->getCell('C'.$row)->getValue(),
+                'contract_num' => $input_file_worksheet->getCell('E'.$row)->getFormattedValue(),
+                'contract_date' => strtotime($input_file_worksheet->getCell('G'.$row)->getFormattedValue()),
+                'course' => $input_file_worksheet->getCell('H'.$row)->getFormattedValue(),
+                'invoice_num' => $input_file_worksheet->getCell('I'.$row)->getFormattedValue(),
+                'issue_date' => strtotime($input_file_worksheet->getCell('J'.$row)->getFormattedValue()),
+                'money' => $input_file_worksheet->getCell('K'.$row)->getValue(),
+            ];
+            print_r($invoice_info);
+            die();
+        }
+
+        /*$highestColumn = $worksheet->getHighestColumn();
         $highestRow = $worksheet->getHighestRow();
 
         $invoice_date = $worksheet->getCell('A4')->getFormattedValue();
@@ -131,19 +165,17 @@ class SiteController extends Controller
             $new_worksheet->setCellValue('B51', "прошел(ла) обучение за {$invoice_semester_date}");
 
             $spreadsheet->addSheet($new_worksheet);
-            
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="myfile.xlsx"');
-            header('Cache-Control: max-age=0');
-
-            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->setPreCalculateFormulas(false);
-            $writer->save('php://output');
-
-            die();
-
+    
         }
-        
+    
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="myfile.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->setPreCalculateFormulas(false);
+        $writer->save('php://output');
+
 
         // echo $highestColumn.$highestRow;
 
@@ -156,7 +188,7 @@ class SiteController extends Controller
 
         // $spreadsheet->setActiveSheetIndex(1);
 
-        die();
+        die();*/
     }
 
     /**
